@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="lib/solr-dataimporthandler-8.5.1.jar" sourcepath="/home/mbolis/devel/contrib/lucene-solr/solr/contrib/dataimporthandler/src/java"/>
+	<classpathentry kind="lib" path="lib/solr-core-8.5.1.jar" sourcepath="/home/mbolis/devel/contrib/lucene-solr/solr/core/src/java"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.7.24.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
