@@ -46,6 +46,7 @@ public class ZipFolderDataSource extends DataSource<Reader> {
   
   @Override
   public Reader getData(final String query) {
+    log.info("Opening reader for query: {}", query);
     final Path filePath = getPath(basePath, query);
     if (Files.isRegularFile(filePath)) {
       return openFileReader(filePath);
@@ -64,6 +65,7 @@ public class ZipFolderDataSource extends DataSource<Reader> {
   
   private Reader openZipFileReader(final Path filePath) {
     final Path dirPath = filePath.getParent();
+    log.info("Looking for ZIP files in parent path: {}", dirPath);
     try {
       final Path zipPath = Files.list(dirPath).filter(file -> file.toString().endsWith(".zip")).findFirst()
           .orElseThrow(() -> new DataImportHandlerException(SEVERE, "No ZIP file found in Directory : " + dirPath));
@@ -88,22 +90,24 @@ public class ZipFolderDataSource extends DataSource<Reader> {
       final Path path = Paths.get(base);
       if (!path.isAbsolute()) {
         final Path absolutePath = path.toAbsolutePath();
-        log.warn("ZipFolderDataSource.basePath is not absolute. Resolving to: {}", absolutePath.toString());
+        log.warn("ZipFolderDataSource.basePath is not absolute. Resolving to: {}", absolutePath);
         return absolutePath;
       }
       return path;
     }).orElseGet(() -> {
       final Path path = Paths.get(".").toAbsolutePath();
-      log.warn("ZipFolderDataSource.basePath is empty. Resolving to: {}", path.toString());
+      log.warn("ZipFolderDataSource.basePath is empty. Resolving to: {}", path);
       return path;
     });
     
-    log.info("Query resolved to: {}", root.resolve(query));
-    return root.resolve(query);
+    final Path path = root.resolve(query);
+    log.info("Accessing file: {}", path);
+    return path;
   }
   
   protected Reader openStream(final Path file) throws IOException {
-    return Files.newBufferedReader(file, Optional.ofNullable(encoding).map(Charset::forName).orElseGet(Charset::defaultCharset));
+    final Charset charset = Optional.ofNullable(encoding).map(Charset::forName).orElseGet(Charset::defaultCharset);
+    return Files.newBufferedReader(file, charset);
   }
   
   @Override
