@@ -98,6 +98,7 @@ public class ZipFolderDataSource extends DataSource<Reader> {
       return path;
     });
     
+    log.info("Query resolved to: {}", root.resolve(query));
     return root.resolve(query);
   }
   
