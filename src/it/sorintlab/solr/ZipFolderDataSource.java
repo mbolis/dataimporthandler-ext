@@ -56,7 +56,9 @@ public class ZipFolderDataSource extends DataSource<Reader> {
   
   private Reader openFileReader(final Path filePath) {
     try {
-      return openStream(filePath);
+      final Reader reader = openStream(filePath);
+      log.info("File '{}' found", filePath);
+      return reader;
     } catch (IOException e) {
       wrapAndThrow(SEVERE, e, "Unable to open File : " + filePath);
       return null;
@@ -73,7 +75,9 @@ public class ZipFolderDataSource extends DataSource<Reader> {
       final String innerPath = filePath.getFileName().toString();
       final Path innerFilePath = FileSystems.newFileSystem(zipPath, null).getPath(innerPath);
       try {
-        return openStream(innerFilePath);
+        final Reader reader = openStream(innerFilePath);
+        log.info("File '{}' found inside ZIP '{}'", innerPath, zipPath);
+        return reader;
       } catch (IOException e) {
         wrapAndThrow(SEVERE, e, "Unable to locate File : " + innerPath + " inside ZIP File : " + zipPath);
         return null;
