@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import org.apache.solr.handler.dataimport.Context;
 import org.apache.solr.handler.dataimport.DataImportHandlerException;
@@ -87,8 +88,8 @@ public class ZipFolderDataSource extends DataSource<Reader> {
   private Reader openZipFileReader(final Path filePath) {
     final Path dirPath = filePath.getParent();
     log.info("Looking for ZIP files in parent path: {}", dirPath);
-    try {
-      final Path zipPath = Files.list(dirPath).filter(file -> file.toString().endsWith(".zip")).findFirst()
+    try (Stream<Path> dirContent = Files.list(dirPath)) {
+      final Path zipPath = dirContent.filter(file -> file.toString().endsWith(".zip")).findFirst()
           .orElseThrow(() -> new DataImportHandlerException(SEVERE, "No ZIP file found in Directory : " + dirPath));
       
       final String innerPath = filePath.getFileName().toString();
