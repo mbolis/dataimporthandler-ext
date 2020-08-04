@@ -3,10 +3,12 @@ package it.sorintlab.solr;
 import static org.apache.solr.handler.dataimport.DataImportHandlerException.SEVERE;
 import static org.apache.solr.handler.dataimport.DataImportHandlerException.wrapAndThrow;
 
+import java.io.FilterReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.Charset;
+import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -65,6 +67,23 @@ public class ZipFolderDataSource extends DataSource<Reader> {
     }
   }
   
+  private static class FileSystemOwningReader extends FilterReader {
+
+    private final FileSystem fs;
+
+    protected FileSystemOwningReader(final Reader in, final FileSystem fs) {
+      super(in);
+      
+      this.fs = fs;
+    }
+    
+    @Override
+    public void close() throws IOException {
+      super.close();
+      fs.close();
+    }
+  }
+  
   private Reader openZipFileReader(final Path filePath) {
     final Path dirPath = filePath.getParent();
     log.info("Looking for ZIP files in parent path: {}", dirPath);
@@ -73,11 +92,12 @@ public class ZipFolderDataSource extends DataSource<Reader> {
           .orElseThrow(() -> new DataImportHandlerException(SEVERE, "No ZIP file found in Directory : " + dirPath));
       
       final String innerPath = filePath.getFileName().toString();
-      final Path innerFilePath = FileSystems.newFileSystem(zipPath, null).getPath(innerPath);
+      final FileSystem zipFileSystem = FileSystems.newFileSystem(zipPath, null);
+      final Path innerFilePath = zipFileSystem.getPath(innerPath);
       try {
         final Reader reader = openStream(innerFilePath);
         log.info("File '{}' found inside ZIP '{}'", innerPath, zipPath);
-        return reader;
+        return new FileSystemOwningReader(reader, zipFileSystem);
       } catch (IOException e) {
         wrapAndThrow(SEVERE, e, "Unable to locate File : " + innerPath + " inside ZIP File : " + zipPath);
         return null;
